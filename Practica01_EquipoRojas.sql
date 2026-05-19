@@ -121,7 +121,7 @@ WHERE v.TotalVentasTerritorio > pt.PromedioVentasTerritorio
 ORDER BY v.TotalVentasTerritorio DESC;
 
 --- Consulta03
--- 03.01
+-- 03.01 esta da 32/32 filas
 SELECT
     st.Name AS Territorio,
     YEAR(soh.OrderDate) AS Anio,
@@ -158,8 +158,17 @@ HAVING
     AND SUM(soh.SubTotal) > 1000000
 ORDER BY
     VentasTotales DESC;
+/*
+puede manejarse una subconsulta a nivel de join para
+generar una tabla pero esta no es una tabla externa.
 
--- Consulta04
+subconsultas relacionadas
+*/
+-- Consulta04 05/17
+/*
+condición de reunion es unir las columnas de las todos tablas en las que se consultan
+este lo vemos como una consulta externa e interna. Este puede ser en el web o hardware.
+*/
     --04.01
     WITH ProdCat AS (
     SELECT p.ProductID
@@ -275,32 +284,22 @@ GROUP BY
 ORDER BY
     Vendedor,
     Categoria;
-/*
-Posibles causas del fallo...
-El ID 4 no es “Clothing” en tu base (en muchas instalaciones cambia).
-
-Nadie vendió TODOS los productos de esa categoría (por ejemplo, hay productos que nunca se vendieron).
-
-Muchos productos “se venden” pero sin SalesPersonID (ventas que no pasan por vendedor), y tu consulta
-filtra SalesPersonID IS NOT NULL, entonces esos productos cuentan en “total de catálogo” pero no son
-alcanzables por un vendedor.
-*/
     --04.03
     SELECT
-    soh.SalesPersonID,
-    CONCAT(pp.FirstName, ' ', pp.LastName) AS Vendedor,
-    pc.Name AS Categoria,
-    COUNT(DISTINCT sod.ProductID) AS ProductosDistintosVendidos
-FROM Sales.SalesOrderHeader soh
-JOIN Sales.SalesOrderDetail sod
-    ON sod.SalesOrderID = soh.SalesOrderID
-JOIN Production.Product p
-    ON p.ProductID = sod.ProductID
-JOIN Production.ProductSubcategory psc
-    ON psc.ProductSubcategoryID = p.ProductSubcategoryID
-JOIN Production.ProductCategory pc
-    ON pc.ProductCategoryID = psc.ProductCategoryID
-JOIN Person.Person pp
+        soh.SalesPersonID,
+        CONCAT(pp.FirstName, ' ', pp.LastName) AS Vendedor,
+        pc.Name AS Categoria,
+        COUNT(DISTINCT sod.ProductID) AS ProductosDistintosVendidos
+    FROM Sales.SalesOrderHeader soh
+    JOIN Sales.SalesOrderDetail sod
+        ON sod.SalesOrderID = soh.SalesOrderID
+    JOIN Production.Product p
+        ON p.ProductID = sod.ProductID
+    JOIN Production.ProductSubcategory psc
+        ON psc.ProductSubcategoryID = p.ProductSubcategoryID
+    JOIN Production.ProductCategory pc
+        ON pc.ProductCategoryID = psc.ProductCategoryID
+    JOIN Person.Person pp
     ON pp.BusinessEntityID = soh.SalesPersonID
 WHERE soh.SalesPersonID IS NOT NULL
 GROUP BY
@@ -312,3 +311,10 @@ ORDER BY Vendedor, Categoria;
 
 
 -- Consulta05
+/*
+recordar que se debe de implementar los servidores 
+vinculados, este debe de consultar una tabla el cual seria
+el servidor original (Server_A) y consultar los datos de productos
+en el servidor adyacente (Server_B).
+creo que deben salir solo 2 a 3 filas en la consulta
+*/
