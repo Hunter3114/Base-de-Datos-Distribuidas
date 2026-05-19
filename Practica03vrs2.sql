@@ -1,6 +1,6 @@
 use covidHistorico2;
 go
-
+--Rojas Hernández Ulises Dariel
 -- verificar los años que existen en la tabla original
 select 
     year(try_convert(date, replace(FECHA_INGRESO,'"',''))) as Anio,
